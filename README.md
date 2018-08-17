@@ -5,3 +5,8 @@ A d3 gauge with 3 pointers
 run http-server and load the static html file
 
 
+```bash
+http-server
+```
+
+http://jsfiddle.net/g0r9n090/

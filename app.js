@@ -91,6 +91,15 @@ var gauge = function(container, configuration, config) {
                 return deg2rad(config.minAngle + (ratio * range));
             });
     }
+
+    function createNewArc() {
+        return arc = d3.svg.arc()
+            .innerRadius(50)
+            .outerRadius(70)
+            .startAngle(deg2rad(20))
+            .endAngle(deg2rad(45))
+    }
+
     that.configure = configure;
 
     function centerTranslation() {
@@ -210,6 +219,7 @@ var gauge = function(container, configuration, config) {
     that.render = render;
 
     function update(newValue, newConfiguration) {
+        createNewArc();
         console.log('what is the counter?');
         console.log(counter);
         counter++;
@@ -282,7 +292,7 @@ function onDocumentReady() {
 
         transitionMs				: 750,
 
-        majorTicks					: 5,
+        majorTicks					: 15,
         labelFormat					: d3.format(',g'),
         labelInset					: 10,
 
@@ -295,7 +305,7 @@ function onDocumentReady() {
         clipHeight: 300,
         ringWidth: 60,
         maxValue: 10,
-        transitionMs: 4000,
+        transitionMs: 4000
     }, config);
     powerGauge.render();
 
