@@ -86,9 +86,6 @@ var gauge = function(container, configuration, config) {
         var cur_color = 'limegreen';
         var new_color, hold;
 
-        console.log('should remove?');
-        console.log(document.getElementsByClassName('newarc').length);
-
         // stop duplication
         if (document.getElementsByClassName('newarc').length > 0) {
             arcs.selectAll('g')
@@ -111,9 +108,6 @@ var gauge = function(container, configuration, config) {
         var foreground = svg1.append("path")
             .datum({endAngle: -90 * (pi / 180)})
             .style("fill", cur_color).attr("d", newArc); // Append foreground arc to svg
-
-        console.log('some information about d');
-        console.log(arcs.selectAll('d'));
 
         arcs.selectAll('d')
             .data(tickData)
@@ -243,16 +237,6 @@ var gauge = function(container, configuration, config) {
             })
             .attr('d', arc);
 
-        testDraw(arcs, 20, 40);
-
-        // arcs.selectAll('d')
-        //     .data(tickData)
-        //     .enter()
-        //     .append('g')
-        //     .append('path')
-        //     .attr('fill', 'blue')
-        //     .attr('d', arc);
-
         var lg = svg.append('g')
             .attr('class', 'label')
             .attr('transform', centerTx);
@@ -288,10 +272,6 @@ var gauge = function(container, configuration, config) {
 
 
         var pointerLine = d3.svg.line().interpolate('monotone');
-
-        // var pgplane = svg.append('g').data([planeData])
-        //     .attr('class', 'planestyle')
-        //     .attr('transform', centerTx);
 
         var pgplane = svg.append('g').data([planeData])
             .attr('id', 'svgplane')
@@ -409,7 +389,7 @@ function onDocumentReady() {
         labelInset: 10,
 
         arcColorFn: d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
-    }
+    };
 
     var powerGauge = gauge('#power-gauge', {
         size: 300,
@@ -424,22 +404,9 @@ function onDocumentReady() {
     function updateReadings() {
         // just pump in random data here...
         // document.getElementById('power-gauge').remove();
-        console.log('what is powergage?');
-        console.log(powerGauge);
-        console.log();
-        randomConfigObject.minAngle = randomConfigObject.minAngle + 20;
 
         var randomValue = Math.random() * 10;
         config.minAngle = randomValue * 10;
-
-        var powerGauge2 = gauge('#power-gauge', {
-            size: 300,
-            clipWidth: 300,
-            clipHeight: 300,
-            ringWidth: 60,
-            maxValue: 10,
-            transitionMs: 4000
-        }, config);
 
         // powerGauge.render();
         // powerGauge.update(randomValue + 1);
