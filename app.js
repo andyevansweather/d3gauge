@@ -24,6 +24,53 @@ var randomConfigObject = {
     arcColorFn: d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
 };
 
+var startAngleGlobal = 0;
+var endAngleGlobal = 0;
+
+function subarcCreator(newArc, innerRadius, outerRadius, start, end) {
+    var tau = 2 * Math.PI; // http://tauday.com/tau-manif
+
+    console.log('what is new arc?');
+    console.log(newArc);
+
+    var arc = d3.svg.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius);
+
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height"),
+        g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var foreground = g.append("path")
+        .datum({startAngle: start, endAngle: 0.127 * tau})
+        .style("fill", "orange")
+        .attr("d", arc);
+
+    startAngleGlobal = start;
+    endAngleGlobal = 0.127 * tau;
+
+        function arcTween(newAngle) {
+        newAngle = tau * newAngle;
+        return function(d) {
+            var interpolateStart = d3.interpolate(d.startAngle, newAngle - 0.25);
+            var interpolate = d3.interpolate(d.endAngle, newAngle);
+            return function(t) {
+                console.log('what is the d?');
+                console.log(d);
+                d.startAngle = interpolateStart(t);
+                d.endAngle = interpolate(t);
+                return arc(d);
+            };
+        };
+    }
+
+    return {
+        arc: foreground,
+        arcTween: arcTween
+    };
+}
+
 var planeStringImage = "M 439.48098,95.969555 L 393.34268,142.46481 L 305.91233,133.41187 L 324.72376,114.58551 L 308.61525,98.464215 L 276.15845,130.94677 L 185.25346,123.08136 L 201.15145,107.27643 L 186.46085,92.574165 L 158.32,120.73735 L 45.386032,112.12042 L 15.000017,131.66667 L 221.20641,192.48691 L 298.26133,237.01135 L 191.91028,345.62828 L 152.82697,408.6082 L 41.549634,393.05411 L 21.037984,413.58203 L 109.25334,470.93369 L 166.38515,558.95725 L 186.8968,538.42933 L 171.35503,427.06371 L 234.28504,387.94939 L 342.81586,281.51396 L 387.305,358.63003 L 448.07703,565.00001 L 467.60778,534.58989 L 458.99769,421.56633 L 487.16033,393.38134 L 473.14247,379.35235 L 456.6139,395.97492 L 448.79636,303.63439 L 481.25315,271.15184 L 465.14464,255.03055 L 446.33321,273.8569 L 436.04766,185.1164 L 482.35108,138.7864 C 501.1942,119.92833 560.62425,61.834815 564.99998,14.999985 C 515.28999,23.707295 476.1521,61.495405 439.48098,95.969555 z ";
 var planeStyleElement = "opacity:1;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible";
 
@@ -50,8 +97,6 @@ var gauge = function(container, configuration, config) {
     var ticks = undefined;
     var tickData = undefined;
     var pointer = undefined;
-    var minpointer = undefined;
-    var maxpointer = undefined;
     var plane = undefined;
 
     var donut = d3.layout.pie();
@@ -73,7 +118,9 @@ var gauge = function(container, configuration, config) {
             return 1 / config.majorTicks;
         });
 
-        // tickData scale
+        var innerRadius = r - config.ringWidth - config.ringInset;
+        var outerRadius = r - config.ringInset;
+
         var newArc = d3.svg.arc()
             .innerRadius(r - config.ringWidth - config.ringInset)
             .outerRadius(r - config.ringInset)
@@ -86,10 +133,22 @@ var gauge = function(container, configuration, config) {
         var cur_color = 'limegreen';
         var new_color, hold;
 
+        console.log('what is the inputs?');
+        console.log(document.getElementsByClassName('newarc'));
+
+        // var foregroundArc = subarcCreator(newArc, innerRadius, outerRadius, deg2rad(lowestGustAngle), deg2rad(highestGustAngle));
+        //
+        // foregroundArc.arc.transition()
+        //     .duration(750)
+        //     .attrTween("d", foregroundArc.arcTween(deg2rad(highestGustAngle)));
+
         // stop duplication
         if (document.getElementsByClassName('newarc').length > 0) {
             arcs.selectAll('g')
-                .remove()
+                //animation
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+                .transition()
+                .duration(4000);
         }
 
         var svg1 = d3.select("body")
@@ -97,17 +156,10 @@ var gauge = function(container, configuration, config) {
             .attr("width", width)
             .attr("height", height)
             .attr('class', 'newarc')
-            .append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-        var background = svg1.append("path")
-            .datum({endAngle: 90 * (pi / 180)})
-            .style("fill", "#ddd")
-            .attr("d", newArc);// Append background arc to svg
-
-
-        var foreground = svg1.append("path")
-            .datum({endAngle: -90 * (pi / 180)})
-            .style("fill", cur_color).attr("d", newArc); // Append foreground arc to svg
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+            .transition()
+            .duration(4000);
 
         arcs.selectAll('d')
             .data(tickData)
@@ -115,7 +167,12 @@ var gauge = function(container, configuration, config) {
             .append('g')
             .append('path')
             .attr('fill', 'green')
+            .transition()
+            .duration(4000)
             .attr('d', newArc);
+
+        ////////////////////
+
     }
 
     function configure(configuration) {
@@ -243,13 +300,18 @@ var gauge = function(container, configuration, config) {
         lg.selectAll('text')
             .data(ticks)
             .enter().append('text')
+            .text('hi')
             .attr('transform', function(d) {
                 var ratio = scale(d);
                 var newAngle = config.minAngle + (ratio * range);
+                console.log('index is');
+                console.log(ticks);
                 return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
             })
-            .text(config.labelFormat);
-
+            .text(function(d) {
+                return tickDataLabel[d];
+            });
+            // .text(tickDataLabel[d]);
 
         var planeData = [[config.pointerWidth / 2, 0],
             [4, -pointerHeadLength],
@@ -300,14 +362,6 @@ var gauge = function(container, configuration, config) {
             .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
             .attr('transform', 'rotate(' + config.minAngle + ')');
 
-        minpointer = pgmin.append('path')
-            .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
-            .attr('transform', 'rotate(' + config.minAngle + ')');
-
-        maxpointer = pgmax.append('path')
-            .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
-            .attr('transform', 'rotate(' + config.minAngle + ')');
-
         update(newValue === undefined ? 0 : newValue);
     }
 
@@ -316,7 +370,7 @@ var gauge = function(container, configuration, config) {
     function update(newValue, newConfiguration) {
         counter++;
 
-        var randomAngle = Math.random() * 360;
+        var randomAngle = Math.random() * 90;
 
         testDraw(arcs, randomAngle - 50, randomAngle);
 
@@ -343,16 +397,6 @@ var gauge = function(container, configuration, config) {
             minAngle = newAngle - 5;
             counter = 1;
         }
-
-        minpointer.transition()
-            .duration(config.transitionMs)
-            .ease('elastic')
-            .attr('transform', 'rotate(' + minAngle + ')');
-
-        maxpointer.transition()
-            .duration(config.transitionMs)
-            .ease('elastic')
-            .attr('transform', 'rotate(' + maxAngle + ')');
     }
 
     that.update = update;
@@ -363,6 +407,7 @@ var gauge = function(container, configuration, config) {
 };
 
 function onDocumentReady() {
+    // var foregroundArc = subarcCreator();
     var config = {
         size: 200,
         clipWidth: 200,
@@ -375,7 +420,7 @@ function onDocumentReady() {
         pointerHeadLengthPercent: 0.9,
 
         minValue: 0,
-        maxValue: 10,
+        maxValue: 12,
 
         // adding angles to make cirle - could be a semicircle gauge
 
@@ -388,7 +433,7 @@ function onDocumentReady() {
         labelFormat: d3.format(',g'),
         labelInset: 10,
 
-        arcColorFn: d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
+        arcColorFn: d3.interpolateHsl(d3.rgb('#ffffff'), d3.rgb('#ffffff'))
     };
 
     var powerGauge = gauge('#power-gauge', {
@@ -417,6 +462,9 @@ function onDocumentReady() {
     updateReadings();
     setInterval(function() {
         updateReadings();
+        // foregroundArc.arc.transition()
+        //     .duration(750)
+        //     .attrTween("d", foregroundArc.arcTween(Math.random()));
     }, 5 * 1000);
 }
 
