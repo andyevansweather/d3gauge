@@ -1,0 +1,22 @@
+{
+  "name": "d3gauge",
+  "version": "1.0.0",
+  "description": "A d3 gauge with 3 pointers",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andyevansweather/d3gauge.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/andyevansweather/d3gauge/issues"
+  },
+  "homepage": "https://github.com/andyevansweather/d3gauge#readme",
+  "dependencies": {
+    "d3": "^5.7.0"
+  }
+}
