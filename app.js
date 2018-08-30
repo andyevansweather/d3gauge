@@ -8,7 +8,6 @@ var gauge = function(container, configuration, config) {
     var range = undefined;
     var r = undefined;
     var pointerHeadLength = undefined;
-    var value = 0;
 
     var minAngle = 0;
     var maxAngle = 0;
@@ -26,15 +25,11 @@ var gauge = function(container, configuration, config) {
     var pointer = undefined;
     var plane = undefined;
 
-    var donut = d3.pie();
-
     function deg2rad(deg) {
         return deg * Math.PI / 180;
     }
 
     function testDraw(arcs, lowestGustAngle, highestGustAngle) {
-        console.log('inside test function');
-
         range = config.maxAngle - config.minAngle;
         r = config.size / 2;
         pointerHeadLength = Math.round(r * config.pointerHeadLengthPercent);
@@ -45,21 +40,14 @@ var gauge = function(container, configuration, config) {
             return 1 / config.majorTicks;
         });
 
-        var innerRadius = r - config.ringWidth - config.ringInset;
-        var outerRadius = r - config.ringInset;
-
         var newArc = d3.arc()
             .innerRadius(r - config.ringWidth - config.ringInset)
             .outerRadius(r - config.ringInset)
             .startAngle(deg2rad(lowestGustAngle))
             .endAngle(deg2rad(highestGustAngle));
 
-        var pi = Math.PI, width = 600, height = 400;
-        var iR = 170;
-        var oR = 110;
-        var cur_color = 'limegreen';
-        var new_color, hold;
-
+        var width = 600;
+        var height = 400;
 
         // stop duplication
         if (document.getElementsByClassName('newarc').length > 0) {
@@ -70,7 +58,7 @@ var gauge = function(container, configuration, config) {
                 .duration(4000);
         }
 
-        var svg1 = d3.select("body")
+        d3.select("body")
             .append("svg")
             .attr("width", width)
             .attr("height", height)
@@ -89,14 +77,10 @@ var gauge = function(container, configuration, config) {
             .transition()
             .duration(4000)
             .attr('d', newArc);
-
-        ////////////////////
-
     }
 
     function configure(configuration) {
-        var prop = undefined;
-        for (prop in configuration) {
+        for (var prop in configuration) {
             config[prop] = configuration[prop];
         }
 
@@ -104,14 +88,11 @@ var gauge = function(container, configuration, config) {
         r = config.size / 2;
         pointerHeadLength = Math.round(r * config.pointerHeadLengthPercent);
 
-
-        // ticks = scale.ticks(config.majorTicks);
         ticks = scale.ticks(config.majorTicks);
         tickData = d3.range(config.majorTicks).map(function() {
             return 1 / config.majorTicks;
         });
 
-        // tickData scale
         arc = d3.arc()
             .innerRadius(r - config.ringWidth - config.ringInset)
             .outerRadius(r - config.ringInset)
@@ -124,57 +105,14 @@ var gauge = function(container, configuration, config) {
                 return deg2rad(config.minAngle + (ratio * range));
             });
 
-        var pi = Math.PI, width = 600, height = 400;
-        var iR = 170;
-        var oR = 110;
-        var cur_color = 'limegreen';
-        var new_color, hold;
+        var width = 600;
+        var height = 400;
 
         var svg = d3.select("body")
             .append("svg")
             .attr("width", width)
             .attr("height", height)
             .append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-        var background = svg.append("path")
-            .datum({endAngle: 90 * (pi / 180)})
-            .style("fill", "#ddd")
-            .attr("d", arc);// Append background arc to svg
-
-
-        var foreground = svg.append("path")
-            .datum({endAngle: -90 * (pi / 180)})
-            .style("fill", cur_color).attr("d", arc); // Append foreground arc to svg
-
-
-        var max = svg
-            .append("text")
-            .attr("transform", "translate(" + (iR + ((oR - iR) / 2)) + ",15)") // Display Max value
-            .attr("text-anchor", "middle")
-            .style("font-family", "Helvetica").text(max); // Set between inner and outer Radius
-// Display Min value
-        var min = svg
-            .append("text")
-            .attr("transform", "translate(" + -(iR + ((oR - iR) / 2)) + ",15)") // Set between inner and outer Radius
-            .attr("text-anchor", "middle")
-            .style("font-family", "Helvetica").text(min);
-
-// Display Current value
-        var current = svg
-            .append("text")
-            .attr("transform", "translate(0," + -(iR / 4) + ")") // Push up from center 1/4 of innerRadius
-            .attr("text-anchor", "middle")
-            .style("font-size", "50")
-            .style("font-family", "Helvetica")
-            .text(current)
-    }
-
-    function createNewArc() {
-        return arc = d3.svg.arc()
-            .innerRadius(50)
-            .outerRadius(70)
-            .startAngle(deg2rad(20))
-            .endAngle(deg2rad(45))
     }
 
     that.configure = configure;
@@ -204,7 +142,6 @@ var gauge = function(container, configuration, config) {
             .attr('class', 'arc')
             .attr('transform', centerTx);
 
-        // arc gets created at this point
         arcs.selectAll('path')
             .data(tickData)
             .enter().append('path')
@@ -230,20 +167,12 @@ var gauge = function(container, configuration, config) {
             .text(function(d) {
                 return tickDataLabel[d];
             });
-            // .text(tickDataLabel[d]);
 
         var planeData = [[config.pointerWidth / 2, 0],
             [4, -pointerHeadLength],
             [-(config.pointerWidth * 4), 0],
             [0, config.pointerTailLength],
             [config.pointerWidth / 2, 0]];
-
-        var svgPlaneData = [[config.pointerWidth / 2, 0],
-            [4, -pointerHeadLength],
-            [-(config.pointerWidth * 4), 0],
-            [0, config.pointerTailLength],
-            [config.pointerWidth / 2, 0]];
-
 
         var lineData = [[config.pointerWidth / 2, 0],
             [0, -pointerHeadLength],
@@ -263,22 +192,13 @@ var gauge = function(container, configuration, config) {
             .attr('id', 'pointer')
             .attr('transform', centerTx);
 
-        var pgmin = svg.append('g').data([lineData])
-            .attr('class', 'minpointer')
-            .attr('transform', centerTx);
-
-        var pgmax = svg.append('g').data([lineData])
-            .attr('class', 'maxpointer')
-            .attr('transform', centerTx);
-
-        // Shoot in plane direction in a directive
         plane = pgplane.append('path')
-            .attr('d', planeStringImage/*function(d) { return pointerLine(d) +'Z';}*/)
+            .attr('d', planeStringImage)
             .attr('style', planeStyleElement)
             .attr('transform', 'rotate(' + config.minAngle + ')');
 
         pointer = pg.append('path')
-            .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
+            .attr('d', pointerLine)
             .attr('transform', 'rotate(' + config.minAngle + ')');
 
         update(newValue === undefined ? 0 : newValue);
@@ -326,7 +246,6 @@ var gauge = function(container, configuration, config) {
 };
 
 function onDocumentReady() {
-    // var foregroundArc = subarcCreator();
     var config = {
         size: 200,
         clipWidth: 200,
@@ -340,8 +259,6 @@ function onDocumentReady() {
 
         minValue: 0,
         maxValue: 12,
-
-        // adding angles to make cirle - could be a semicircle gauge
 
         minAngle: -90 - 45 - 45,
         maxAngle: 90 + 45 + 45,
@@ -366,24 +283,16 @@ function onDocumentReady() {
     powerGauge.render();
 
     function updateReadings() {
-        // just pump in random data here...
-        // document.getElementById('power-gauge').remove();
 
         var randomValue = Math.random() * 10;
         config.minAngle = randomValue * 10;
 
-        // powerGauge.render();
-        // powerGauge.update(randomValue + 1);
         powerGauge.update(randomValue);
     }
 
-    // every few seconds update reading values
     updateReadings();
     setInterval(function() {
         updateReadings();
-        // foregroundArc.arc.transition()
-        //     .duration(750)
-        //     .attrTween("d", foregroundArc.arcTween(Math.random()));
     }, 5 * 1000);
 }
 
