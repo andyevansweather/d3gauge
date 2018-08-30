@@ -9,4 +9,4 @@ run http-server and load the static html file
 http-server
 ```
 
-http://jsfiddle.net/g0r9n090/
+https://codepen.io/andyevansweather/full/LJRWwo/
